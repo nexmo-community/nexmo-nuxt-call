@@ -1,28 +1,41 @@
 <template>
-  <div class="container">
-    <div>
-      <logo />
-      <h1 class="title">
-        nexmo-nuxt-call
-      </h1>
-      <h2 class="subtitle">
-        How to Make and Receive Calls with Nuxt.js and the Nexmo Voice API
-      </h2>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          class="button--green"
-        >
-          Documentation
-        </a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          class="button--grey"
-        >
-          GitHub
-        </a>
+  <div class="w-1/2 mx-auto py-20">
+    <div class="w-full shadow-2xl subpixel-antialiased rounded h-64 bg-black border-black mx-auto">
+      <div
+        id="headerTerminal"
+        class="flex items-center h-6 rounded-t bg-gray-100 border-b border-gray-500 text-center text-black"
+      >
+        <div
+          id="closebtn"
+          class="flex ml-2 items-center text-center border-red-900 bg-red-500 shadow-inner rounded-full w-3 h-3"
+        />
+        <div
+          id="minbtn"
+          class="ml-2 border-yellow-900 bg-yellow-500 shadow-inner rounded-full w-3 h-3"
+        />
+        <div
+          id="maxbtn"
+          class="ml-2 border-green-900 bg-green-500 shadow-inner rounded-full w-3 h-3"
+        />
+        <div id="terminaltitle" class="mx-auto pr-16">
+          <p class="text-center text-sm">
+            <logo />Terminal
+            <logo />
+          </p>
+        </div>
+      </div>
+      <div id="console" class="pl-1 pt-1 h-auto text-green-500 font-mono text-xs bg-black">
+        <p class="pb-1">
+          Last login: {{ new Date().toUTCString() }} on ttys002
+        </p>
+        <p v-for="counter in counters" :key="counter.id" class="pb-1">
+          <span class="text-red-600">@lakatos88</span>
+          <span class="text-yellow-600 mx-1">></span>
+          <span class="text-blue-600">~/nexmo/nexmo-nuxt-call</span>
+          <span class="text-red-600 mx-1">$</span>
+          <span v-if="!counter.message" class="blink" contenteditable="true" @click.once="stopBlinking" @keydown.enter.once="runCommand">_</span>
+          <span v-if="counter.message">{{ counter.message }}</span>
+        </p>
       </div>
     </div>
   </div>
@@ -34,44 +47,68 @@ import Logo from '~/components/Logo.vue'
 export default {
   components: {
     Logo
+  },
+  data () {
+    return {
+      counters: [{ id: 0 }]
+    }
+  },
+  mounted () {
+    console.log(process.env.WS_URL)
+    const ws = new WebSocket(process.env.WS_URL)
+
+    ws.onmessage = (event) => {
+      this.counters[this.counters.length - 1].message = event.data
+      this.counters.push({ id: this.counters.length })
+    }
+  },
+  methods: {
+    stopBlinking (event) {
+      event.target.classList.remove('blink')
+      event.target.textContent = '\u00A0'
+    },
+    async runCommand (event) {
+      const splitCommand = event.target.textContent.trim().split(' ')
+      event.target.contentEditable = false
+      if (splitCommand.length > 3 && splitCommand[0] === 'nexmo' && splitCommand[1] === 'call') {
+        const call = await this.$axios.$get(`/api/make?text=${splitCommand.slice(3).join(' ')}&number=${splitCommand[2]}`)
+        this.counters.push({ id: this.counters.length, message: call })
+      } else {
+        this.counters.push({ id: this.counters.length, message: `Unrecognized command "${splitCommand[0]}".` })
+      }
+      this.counters.push({ id: this.counters.length })
+    }
   }
 }
 </script>
 
 <style>
-/* Sample `apply` at-rules with Tailwind CSS
-.container {
-  @apply min-h-screen flex justify-center items-center text-center mx-auto;
-}
-*/
-.container {
-  margin: 0 auto;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+.NuxtLogo {
+  width: 10px;
+  height: 10px;
+  position: relative;
+  margin: 0 10px;
+  bottom: 2px;
+  display: inline-block;
 }
 
-.title {
-  font-family: 'Quicksand', 'Source Sans Pro', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
+.blink {
+  animation-duration: 1s;
+  animation-name: blink;
+  animation-iteration-count: infinite;
 }
 
-.subtitle {
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
+@keyframes blink {
+  from {
+    opacity: 1;
+  }
 
-.links {
-  padding-top: 15px;
+  50% {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 </style>

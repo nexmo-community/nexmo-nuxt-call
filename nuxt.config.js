@@ -62,5 +62,15 @@ export default {
     */
     extend (config, ctx) {
     }
-  }
+  },
+  env: {
+    baseUrl: process.env.BASE_URL || 'http://localhost:3000',
+    wsUrl: process.env.WS_URL || 'ws://localhost:3001'
+  },
+
+  serverMiddleware: [
+    { path: '/api/events', handler: '~/api/events.js' },
+    { path: '/api/receive', handler: '~/api/receive-call.js' },
+    { path: '/api/make', handler: '~/api/make-call.js' }
+  ]
 }
