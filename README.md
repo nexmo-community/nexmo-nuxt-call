@@ -19,4 +19,4 @@ $ npm run start
 $ npm run generate
 ```
 
-For detailed explanation on how things work, check out [Nuxt.js docs](https://nuxtjs.org).
+For detailed explanation on how things work, check out [the associated blog post](https://www.nexmo.com/blog/2020/02/21/how-make-receive-phone-calls-with-nuxt-js-nexmo-voice-dr).
