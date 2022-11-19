@@ -15,7 +15,7 @@
     "@nuxtjs/axios": "^5.3.6",
     "@nuxtjs/dotenv": "^1.4.0",
     "nexmo": "^2.6.0",
-    "nuxt": "^2.0.0",
+    "nuxt": "^2.15.8",
     "ws": "^7.2.1"
   },
   "devDependencies": {
